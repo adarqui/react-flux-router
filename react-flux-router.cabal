@@ -15,8 +15,16 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     React.Flux.Router.WebRoutes
   build-depends:       base >= 4.7 && < 5
+                     , bytestring
+                     , react-flux
+                     , text
+                     , transformers
+                     , web-routes
+  if impl(ghcjs)
+    build-depends:     ghcjs-base
+  ghc-options:         -Wall
   default-language:    Haskell2010
 
 executable react-flux-router-exe
