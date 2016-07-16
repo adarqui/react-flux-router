@@ -13,6 +13,11 @@ I am waiting on a potential PR from web-routes that i'd like to incorporate into
 
 Not sure why this isn't in an existing repository by itself. It's the best router i've seen so far, which targets ghcjs. Odd.
 
+## what's in it?
+
+src/React/Flux/Router/WebRoutes - React.Flux.Router.WebRoutes
+- route parsing based on the web-routes package
+
 ## build
 
 ```
