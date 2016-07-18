@@ -45,8 +45,20 @@ actionRoute mparentRouter action =
 
 
 
-initRouter :: ([Text] -> IO ()) -> IO ()
-initRouter router =
+-- | Initialize a router which takes an optional initial handler, and a handler that is run on every hash change
+--
+-- > initRouter Nothing go
+-- > initRouter (Just go) go
+--
+-- The initial_router can be used for example, to properly route your app on first page load
+--
+initRouter :: Maybe ([Text] -> IO ()) ->  ([Text] -> IO ()) -> IO ()
+initRouter m_initial_router router = do
+
+  case m_initial_router of
+    Nothing             -> pure ()
+    Just initial_router -> maybe (pure ()) (initial_router . stripHash . WebRoutes.decodePathInfo . BC.pack) =<< getLocationHash
+
   onLocationHashChange $ router . stripHash . WebRoutes.decodePathInfo . BC.pack
   where
     stripHash ("#":path) = path
