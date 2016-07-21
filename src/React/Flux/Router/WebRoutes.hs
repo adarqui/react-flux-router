@@ -10,6 +10,9 @@ module React.Flux.Router.WebRoutes (
   actionRoute,
   childRoutePath,
   initRouter,
+  initRouterRaw,
+  initRouterRaw'Text,
+  initRouterRaw'ByteString,
   storeRouter
 ) where
 
@@ -19,9 +22,10 @@ import           GHCJS.Router.Base
 import           React.Flux
 
 import           Control.Monad.IO.Class (liftIO)
+import           Data.ByteString.Char8  (ByteString)
 import qualified Data.ByteString.Char8  as BC (pack)
 import           Data.Text              (Text)
-import qualified Data.Text              as T (cons, isPrefixOf)
+import qualified Data.Text              as Text (cons, isPrefixOf, pack)
 import qualified Web.Routes             as WebRoutes (PathInfo, decodePathInfo,
                                                       mkSitePI, runRouteT,
                                                       runSite, toPathInfo,
@@ -39,9 +43,9 @@ actionRoute mparentRouter action =
   frag
   where
     path = maybe (WebRoutes.toPathInfo action) ($ childRoutePath action) mparentRouter
-    frag = if "#" `T.isPrefixOf` path
+    frag = if "#" `Text.isPrefixOf` path
            then path
-           else T.cons '#' path
+           else Text.cons '#' path
 
 
 
@@ -74,17 +78,37 @@ initRouter m_initial_router router = do
 --
 -- The initial_router can be used for example, to properly route your app on first page load
 --
-initRouterRaw :: Maybe (ByteString -> IO ()) ->  (ByteString -> IO ()) -> IO ()
+initRouterRaw :: Maybe (String -> IO ()) ->  (String -> IO ()) -> IO ()
 initRouterRaw m_initial_router router = do
 
   case m_initial_router of
     Nothing             -> pure ()
-    Just initial_router -> maybe (pure ()) (initial_router . stripHash . BC.pack) =<< getLocationHash
+    Just initial_router -> maybe (pure ()) (initial_router . stripHash) =<< getLocationHash
 
-  onLocationHashChange $ router . stripHash . BC.pack
+  onLocationHashChange $ router . stripHash
   where
-    stripHash ("#":path) = path
+    stripHash ('#':path) = path
     stripHash path       = path
+
+
+
+-- | Initialize a router which takes an optional initial handler, and a handler that is run on every hash change
+--
+initRouterRaw'Text :: Maybe (Text -> IO ()) ->  (Text -> IO ()) -> IO ()
+initRouterRaw'Text m_initial_router router =
+  initRouterRaw
+    (maybe Nothing (Just . (. Text.pack)) m_initial_router)
+    (router . Text.pack)
+
+
+
+-- | Initialize a router which takes an optional initial handler, and a handler that is run on every hash change
+--
+initRouterRaw'ByteString :: Maybe (ByteString -> IO ()) ->  (ByteString -> IO ()) -> IO ()
+initRouterRaw'ByteString m_initial_router router =
+  initRouterRaw
+    (maybe Nothing (Just . (. BC.pack)) m_initial_router)
+    (router . BC.pack)
 
 
 
