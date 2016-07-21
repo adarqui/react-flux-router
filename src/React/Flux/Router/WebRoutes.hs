@@ -62,7 +62,29 @@ initRouter m_initial_router router = do
   onLocationHashChange $ router . stripHash . WebRoutes.decodePathInfo . BC.pack
   where
     stripHash ("#":path) = path
-    stripHash path = path
+    stripHash path       = path
+
+
+
+-- | Initialize a router which takes an optional initial handler, and a handler that is run on every hash change
+-- Unlike initRouter, this version doesn't decode the location into [Text segments]
+--
+-- > initRouter Nothing go
+-- > initRouter (Just go) go
+--
+-- The initial_router can be used for example, to properly route your app on first page load
+--
+initRouterRaw :: Maybe (ByteString -> IO ()) ->  (ByteString -> IO ()) -> IO ()
+initRouterRaw m_initial_router router = do
+
+  case m_initial_router of
+    Nothing             -> pure ()
+    Just initial_router -> maybe (pure ()) (initial_router . stripHash . BC.pack) =<< getLocationHash
+
+  onLocationHashChange $ router . stripHash . BC.pack
+  where
+    stripHash ("#":path) = path
+    stripHash path       = path
 
 
 
