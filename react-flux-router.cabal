@@ -19,7 +19,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , ghcjs-router
-                     , react-flux
+                     , react-flux == 1.2.3
                      , text
                      , transformers
                      , web-routes
